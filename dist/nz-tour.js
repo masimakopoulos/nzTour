@@ -1,7 +1,7 @@
-(function() {
+(function () {
     var module = angular.module('nzTour', []);
 
-    module.factory('nzTour', ["$q", "$rootScope", "$compile", "$timeout", function($q, $rootScope, $compile, $timeout) {
+    module.factory('nzTour', ["$q", "$rootScope", "$compile", "$timeout", function ($q, $rootScope, $compile, $timeout) {
 
         var service = $rootScope.$new();
 
@@ -16,6 +16,10 @@
                     clickExit: false,
                     scrollThrough: true,
                     color: 'rgba(0,0,0,.7)'
+                },
+                dimensions: {
+                    maxHeight: 120,
+                    maxWidth: 250
                 },
                 dark: false,
                 scrollBox: navigator.userAgent.indexOf('AppleWebKit') != -1 ? "body" : "html",
@@ -57,7 +61,7 @@
             }
             if (service.current) {
                 return stop()
-                    .then(function() {
+                    .then(function () {
                         return startTour(tour);
                     });
             }
@@ -66,10 +70,10 @@
 
         function stop() {
             return doAfter(0)
-                .then(function() {
+                .then(function () {
                     return toggleElements(false);
                 })
-                .then(function() {
+                .then(function () {
                     service.current.promise.reject();
                     service.current = false;
                     return true;
@@ -89,7 +93,7 @@
 
             return doAfter(1)
                 .then(checkHasNext)
-                .then(function() {
+                .then(function () {
                     service.current.step++;
                     return 1;
                 })
@@ -98,7 +102,7 @@
 
         function previous() {
             return doAfter(-1)
-                .then(function() {
+                .then(function () {
                     if (service.current.step > 0) {
                         service.current.step--;
                         return -1;
@@ -111,7 +115,7 @@
         function gotoStep(i) {
             if (i > 0 && i <= service.current.tour.steps.length) {
                 return doAfter(0)
-                    .then(function() {
+                    .then(function () {
                         service.current.step = i - 1;
                         return 0;
                     })
@@ -127,7 +131,9 @@
 
             // Check for valid priorities
             var validPriorities = function (priorities) {
-                if (!angular.isArray(priorities)) { return false; }
+                if (!angular.isArray(priorities)) {
+                    return false;
+                }
                 for (var i = 0; i < priorities.length; i += 1) {
                     if (service.config.placementPriority.indexOf(priorities[i]) === -1) {
                         return false;
@@ -141,7 +147,9 @@
             }
 
             angular.forEach(tour.steps, function (step) {
-                if (!step.placementPriority) { return; }
+                if (!step.placementPriority) {
+                    return;
+                }
                 if (!validPriorities(step.placementPriority)) {
                     delete step.placementPriority;
                 }
@@ -166,7 +174,7 @@
                 service.box.removeClass('hidden');
             } else {
                 service.box.addClass('hidden');
-                return $timeout(function() {
+                return $timeout(function () {
                     service.cleanup();
                 }, service.current.tour.config.animationDuration);
             }
@@ -200,7 +208,7 @@
         function checkHasNext() {
             if (service.current.step === service.current.tour.steps.length - 1) {
                 return finish()
-                    .then(function(){
+                    .then(function () {
                         return $q.reject('No more steps left');
                     });
             }
@@ -209,7 +217,7 @@
 
         function finish() {
             return toggleElements(false)
-                .then(function() {
+                .then(function () {
                     service.current.promise.resolve();
                     service.current = false;
                     return true;
@@ -222,11 +230,11 @@
 
         function throttle(callback, limit) {
             var wait = false;
-            return function() {
+            return function () {
                 if (!wait) {
                     callback.call();
                     wait = true;
-                    $timeout(function() {
+                    $timeout(function () {
                         wait = false;
                     }, limit);
                 }
@@ -235,10 +243,10 @@
 
         function debounce(func, wait, immediate) {
             var timeout;
-            return function() {
+            return function () {
                 var context = this,
                     args = arguments;
-                var later = function() {
+                var later = function () {
                     timeout = null;
                     if (!immediate) func.apply(context, args);
                 };
@@ -250,7 +258,7 @@
         }
     }]);
 
-    module.directive('nzTour', ["$q", function($q) {
+    module.directive('nzTour', ["$q", function ($q) {
         return {
             template: [
                 '<div id="nzTour-box-wrap">',
@@ -275,7 +283,7 @@
                 '    <div class="mask left" ng-style="{\'background-color\': current.tour.config.mask.color}"></div>',
                 '</div>'
             ].join(' '),
-            link: function($scope, el) {
+            link: function ($scope, el) {
 
                 // $scope is the actual nzTour service :)
 
@@ -283,8 +291,8 @@
                     target = false,
                     seeking = false,
                     margin = 15,
-                    maxHeight = 120,
-                    maxWidth = 250,
+                    maxHeight = $scope.current.tour.config.dimensions.maxHeight,
+                    maxWidth = $scope.current.tour.config.dimensions.maxWidth,
                     scrolling = false,
                     maskTransitions = true,
                     currentStep = null;
@@ -336,7 +344,7 @@
                 var stopScrollingDebounced = $scope.debounce(stopScrolling, 100);
 
                 // Key Bindings
-                if(config.disableHotkeys == false) {
+                if (config.disableHotkeys == false) {
                     els.window.bind('keydown', keyDown);
                     // window scroll, resize bindings
                     els.window.bind('resize scroll', onWindowScrollDebounced);
@@ -368,7 +376,7 @@
 
                 // Events
 
-                $scope.tryStop = function() {
+                $scope.tryStop = function () {
                     if (config.mask.clickExit) {
                         $scope.stop();
                     }
@@ -495,7 +503,7 @@
                         .then(scrollToTarget)
                         .then(getDimensions)
                         .then(moveToTarget)
-                        .then(function() {
+                        .then(function () {
                             seeking = false;
                         });
                 }
@@ -542,7 +550,7 @@
                     };
 
                     // Round Offsets
-                    angular.forEach(dims.scroll.offset, function(o, i) {
+                    angular.forEach(dims.scroll.offset, function (o, i) {
                         dims.scroll.offset[i] = Math.ceil(o);
                     });
 
@@ -566,7 +574,7 @@
                     }
 
                     // Round Offsets
-                    angular.forEach(dims.target.offset, function(o, i) {
+                    angular.forEach(dims.target.offset, function (o, i) {
                         dims.target.offset[i] = Math.ceil(o);
                     });
 
@@ -606,7 +614,7 @@
                         els.scroll.animate({
                                 scrollTop: newScrollTop
                             }, scrolling ? 0 : config.animationDuration,
-                            function() {
+                            function () {
                                 d.resolve();
                             });
                     }
@@ -666,7 +674,7 @@
                     };
 
                     var placed = false;
-                    angular.forEach((step.placementPriority || config.placementPriority), function(priority) {
+                    angular.forEach((step.placementPriority || config.placementPriority), function (priority) {
                         if (!placed && placementOptions[priority]()) {
                             placed = true;
                         }
@@ -951,9 +959,9 @@
     }]);
 
     function extendDeep(dst) {
-        angular.forEach(arguments, function(obj) {
+        angular.forEach(arguments, function (obj) {
             if (obj !== dst) {
-                angular.forEach(obj, function(value, key) {
+                angular.forEach(obj, function (value, key) {
                     if (dst[key] && dst[key].constructor && dst[key].constructor === Object) {
                         extendDeep(dst[key], value);
                     } else {
@@ -985,9 +993,9 @@
     // detect available wheel event
     support = "onwheel" in document.createElement("div") ? "wheel" : // Modern browsers support "wheel"
         document.onmousewheel !== undefined ? "mousewheel" : // Webkit and IE support at least "mousewheel"
-        "DOMMouseScroll"; // let's assume that remaining browsers are older Firefox
+            "DOMMouseScroll"; // let's assume that remaining browsers are older Firefox
 
-    window.addWheelListener = function(elem, callback, useCapture) {
+    window.addWheelListener = function (elem, callback, useCapture) {
         _addWheelListener(elem, support, callback, useCapture);
 
         // handle MozMousePixelScroll in older Firefox
@@ -996,7 +1004,7 @@
         }
     };
 
-    window.removeWheelListener = function(elem, callback, useCapture) {
+    window.removeWheelListener = function (elem, callback, useCapture) {
         _removeWheelListener(elem, support, callback, useCapture);
 
         // handle MozMousePixelScroll in older Firefox
@@ -1025,7 +1033,7 @@
             deltaMode: originalEvent.type == "MozMousePixelScroll" ? 0 : 1,
             deltaX: 0,
             deltaZ: 0,
-            preventDefault: function() {
+            preventDefault: function () {
                 originalEvent.preventDefault ?
                     originalEvent.preventDefault() :
                     originalEvent.returnValue = false;

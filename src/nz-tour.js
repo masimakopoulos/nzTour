@@ -17,6 +17,10 @@
                     scrollThrough: true,
                     color: 'rgba(0,0,0,.7)'
                 },
+                dimensions: {
+                    maxHeight: 120,
+                    maxWidth: 250
+                },
                 dark: false,
                 scrollBox: navigator.userAgent.indexOf('AppleWebKit') != -1 ? "body" : "html",
                 previousText: 'Previous',
@@ -126,8 +130,10 @@
             tour.config = extendDeep({}, service.config, tour.config);
 
             // Check for valid priorities
-            var validPriorities = function (priorities) {
-                if (!angular.isArray(priorities)) { return false; }
+            var validPriorities = function(priorities) {
+                if (!angular.isArray(priorities)) {
+                    return false;
+                }
                 for (var i = 0; i < priorities.length; i += 1) {
                     if (service.config.placementPriority.indexOf(priorities[i]) === -1) {
                         return false;
@@ -140,8 +146,10 @@
                 tour.config.placementPriority = service.config.placementPriority;
             }
 
-            angular.forEach(tour.steps, function (step) {
-                if (!step.placementPriority) { return; }
+            angular.forEach(tour.steps, function(step) {
+                if (!step.placementPriority) {
+                    return;
+                }
                 if (!validPriorities(step.placementPriority)) {
                     delete step.placementPriority;
                 }
@@ -200,7 +208,7 @@
         function checkHasNext() {
             if (service.current.step === service.current.tour.steps.length - 1) {
                 return finish()
-                    .then(function(){
+                    .then(function() {
                         return $q.reject('No more steps left');
                     });
             }
@@ -283,8 +291,8 @@
                     target = false,
                     seeking = false,
                     margin = 15,
-                    maxHeight = 120,
-                    maxWidth = 250,
+                    maxHeight = $scope.current.tour.config.dimensions.maxHeight,
+                    maxWidth = $scope.current.tour.config.dimensions.maxWidth,
                     scrolling = false,
                     maskTransitions = true,
                     currentStep = null;
@@ -336,7 +344,7 @@
                 var stopScrollingDebounced = $scope.debounce(stopScrolling, 100);
 
                 // Key Bindings
-                if(config.disableHotkeys == false) {
+                if (config.disableHotkeys == false) {
                     els.window.bind('keydown', keyDown);
                     // window scroll, resize bindings
                     els.window.bind('resize scroll', onWindowScrollDebounced);
@@ -985,7 +993,7 @@
     // detect available wheel event
     support = "onwheel" in document.createElement("div") ? "wheel" : // Modern browsers support "wheel"
         document.onmousewheel !== undefined ? "mousewheel" : // Webkit and IE support at least "mousewheel"
-        "DOMMouseScroll"; // let's assume that remaining browsers are older Firefox
+            "DOMMouseScroll"; // let's assume that remaining browsers are older Firefox
 
     window.addWheelListener = function(elem, callback, useCapture) {
         _addWheelListener(elem, support, callback, useCapture);
